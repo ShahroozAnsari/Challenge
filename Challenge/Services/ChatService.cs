@@ -76,28 +76,32 @@ namespace Challenge
                 }
                 else if (request.Content == "Bye")
                 {
-
-                    var response = new StreamingMessageResponse
+                    _ = Task.Run(async () =>
                     {
-                        CorrelationId = request.CorrelationId,
-                        MessageResponse = new MessageResponse { Content = "Bye" }
-                    };
-                    await responseChannel.Writer.WriteAsync(response);
-
+                        var response = new StreamingMessageResponse
+                        {
+                            CorrelationId = request.CorrelationId,
+                            MessageResponse = new MessageResponse {Content = "Bye"}
+                        };
+                        await responseChannel.Writer.WriteAsync(response);
+                    });
                     break;
                 }
                 else
                 {
-                   
-                    var response = new StreamingMessageResponse()
+                    _ = Task.Run(async () =>
                     {
-                        CorrelationId = request.CorrelationId,
-                        Error = new Error { Code = (int)StatusCode.InvalidArgument, Message = "Invalid Request" },
+                        var response = new StreamingMessageResponse()
+                        {
+                            CorrelationId = request.CorrelationId,
+                            Error = new Error { Code = (int)StatusCode.InvalidArgument, Message = "Invalid Request" },
 
-                    };
+                        };
 
-                    await responseChannel.Writer.WriteAsync(response);
-                    _logger.LogInformation($"{Environment.NewLine}GRPC Request{Environment.NewLine}Method: Exception {Environment.NewLine}Data: {response}");
+                        await responseChannel.Writer.WriteAsync(response);
+                        _logger.LogInformation(
+                            $"{Environment.NewLine}GRPC Request{Environment.NewLine}Method: Exception {Environment.NewLine}Data: {response}");
+                    });
                 }
 
             }

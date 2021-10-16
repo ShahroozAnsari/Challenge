@@ -17,11 +17,11 @@ namespace ClientConsole
 {
     public class Client : IClient
     {
-        public delegate void MyEventHandler(object source, MessageEventArgs args);
-        public event MyEventHandler MessageReceivedEvent;
+        private delegate void MessageReceivedEventHandler(object source, MessageEventArgs args);
+        private event MessageReceivedEventHandler messageReceivedEvent;
         private bool connectionIsOpen = false;
 
-        private Channel chanel = new("localhost:5000", ChannelCredentials.Insecure);
+        private Channel channel = new("localhost:5000", ChannelCredentials.Insecure);
         private Chat.ChatClient client;
         private AsyncDuplexStreamingCall<MessageRequest, StreamingMessageResponse> call;
 
@@ -29,7 +29,7 @@ namespace ClientConsole
 
         public Client()
         {
-            client = new Chat.ChatClient(chanel);
+            client = new Chat.ChatClient(channel);
             call = client.MessageChanel();
             connectionIsOpen = true;
             Task.Run(async () =>
@@ -38,7 +38,7 @@ namespace ClientConsole
                 {
                     await foreach (var message in call.ResponseStream.ReadAllAsync())
                     {
-                        MessageReceivedEvent.Invoke(call.ResponseStream, new MessageEventArgs { Message = message });
+                        messageReceivedEvent(call.ResponseStream, new MessageEventArgs { Message = message });
                     }
                 }
                 catch (RpcException ex)
@@ -78,10 +78,9 @@ namespace ClientConsole
                 throw new Exception("Connection Is Close");
             var id = Guid.NewGuid().ToString();
 
-            var responseTask = Observable.FromEventPattern<MyEventHandler, MessageEventArgs>(
-                    h => MessageReceivedEvent += h,
-                    h => MessageReceivedEvent -= h)
-              
+            var responseTask = Observable.FromEventPattern<MessageReceivedEventHandler, MessageEventArgs>(
+                    h => messageReceivedEvent += h,
+                    h => messageReceivedEvent -= h)
                 .Where(a => a.EventArgs.Message.CorrelationId == id)
                 .Timeout(new TimeSpan(0,0,10))
                 .Select(ep => ep.EventArgs.Message)
