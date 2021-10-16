@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "Challenge.Protos";
+
+import "google/protobuf/any.proto";
+
+service Chat {
+  rpc MessageChanel (stream MessageRequest) returns (stream StreamingMessageResponse);
+}
+
+message MessageRequest {
+ string correlationId=1;
+  string content = 2;
+}
+message MessageResponse {
+ 
+  string content = 2;
+}
+message StreamingMessageResponse {
+  string correlationId=1;
+ oneof message{
+        MessageResponse messageResponse=2;
+        Error error=3;
+       }
+}
+
+message Error {
+  int32 Code=1;
+  string message=2;
+}
