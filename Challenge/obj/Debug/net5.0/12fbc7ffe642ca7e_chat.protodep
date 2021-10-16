@@ -1,3 +1,0 @@
-obj\Debug\net5.0\Protos/Chat.cs \
-obj\Debug\net5.0\Protos/ChatGrpc.cs: C:/Users/Shahrooz/.nuget/packages/grpc.tools/2.40.0/build/native/include/google/protobuf/any.proto\
- Protos/chat.proto
